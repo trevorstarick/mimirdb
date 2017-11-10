@@ -1,104 +1,104 @@
 # Boolean Transactions
-## AND
+### AND
 Keeps existing keys if they are in the result of the following query
 `[a, b, c] AND [b, c] = [b, c]`
 
-## END
+### END
 Ends the transaction and returns all of the currently valid keys
 
-## OR
+### OR
 Adds the result of the following query to the transaction
 `[a] OR [b, c] = [a, b, c,]`
 
-## NAND
+### NAND
 Removes the result of the following query form the transaction
 `[a, b, c] NAND [b, c] = [a]`
 
-## START [ALL] [NONE]
+### START [ALL] [NONE]
 Starts the transaction with either all of the data from the instance (filter out) or none (focus on)
 
 
 # Connection
-## AUTH password
+### AUTH password
 Authenticates with Server
 
-## LIST
+### LIST
 Lists instances
 
-## PING
+### PING
 Returns `PONG`
 
-## QUIT
+### QUIT
 Quits Connection
 
-## SELECT instance
+### SELECT instance
 Switches instance
 
 
 # Geo
-## BOUNDS nelatitude nelongitude swlatitude swlongitude [LIMIT limit]
+### BOUNDS nelatitude nelongitude swlatitude swlongitude [LIMIT limit]
 Returns all keys that fall inside the bounding box
 
-## POINT latitude longitude [RADIUS radius] [LIMIT limit]
+### POINT latitude longitude [RADIUS radius] [LIMIT limit]
 Returns all keys that fall inside the radius
 
 
 # Time
-## TSCAN start [end]
+### TRANGE start [end]
 Returns all keys from start to end. If no end is provided, return until now
 
 
 # Keys
-## BIND parent child [child...]
+### BIND parent child [child...]
 Binds the children with parent element
 
-## DEL key [key...]
+### DEL key [key...]
 Deletes the key(s) and unbinds the children from them
 
-## NUKE key
+### NUKE key
 Recursivly deletes key and all children/grand-children, unbinding them from any parent
 
-## EXISTS key [key...]
+### EXISTS key [key...]
 Returns an array of booleans indicative of if the key(s) exists
 
-## GET key [key...]
+### GET key [key...]
 Returns and array of values based off of the keys requested
 
-## RANDOM number
+### RANDOM number
 Returns `n` number of random keys
 
-## SET key value
+### SET key value
 Sets the key's value. If key doesn't exist, create a new one and set it's value
 
-## UNBIND parent child [child...]
+### UNBIND parent child [child...]
 Unbinds the children from the parent
 
-## WATCH key [key...]
+### WATCH key [key...]
 Watches a/an key(s) and prints a changelog
 
 
 # Server Admin
-## CLIENTS
+### CLIENTS
 Lists all currently connected CLIENTS
 
-## FLUSHALL
+### FLUSHALL
 Deletes everything
 
-## FLUSHDB
+### FLUSHDB
 Deletes everything in current instance
 
-## INFO [section]
+### INFO [section]
 Returns information on server, or instance. If no section is provided, return all info
 
-## SAVE
+### SAVE
 Writes content to disk
 
-## SHUTDOWN
+### SHUTDOWN
 Stops the server
 
-## TIME
+### TIME
 Returns current time on server
 
 # Utils
-## UUID number
+### UUID number
 Returns `n` random UUID(s)
