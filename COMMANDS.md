@@ -44,7 +44,7 @@ Returns all keys that fall inside the radius
 
 
 # Time
-### TSCAN start [end]
+### TRANGE start [end]
 Returns all keys from start to end. If no end is provided, return until now
 
 
