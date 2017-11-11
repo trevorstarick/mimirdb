@@ -9,32 +9,9 @@ import (
 	"io"
 	"github.com/satori/uuid"
 	"strconv"
+
+	. "github.com/trevorstarick/mimirdb/connection"
 )
-
-type Connection struct {
-	net.Conn
-
-	Open bool
-
-	isTransaction bool
-	transactionInitial string
-	transactionOperand string
-	transactionStorage []string
-}
-
-func (c *Connection) New (conn net.Conn) Connection {
-	var connection Connection
-	connection.Conn = conn
-
-	return connection
-}
-
-func (c *Connection) End () {
-	fmt.Printf("[info] connection from %v closed\n", c.RemoteAddr())
-	c.Close()
-	c.Open = false
-	return
-}
 
 
 type Command struct {
@@ -46,16 +23,15 @@ func (c *Command) Parse(line string) Command {
 	l := strings.SplitN(line, " ", -1)
 
 	if len(l) > 1 {
-		return Command{strings.ToUpper(l[0]), l[1:]}
+		 return Command{strings.ToUpper(l[0]), l[1:]}
 	} else {
-		return Command{strings.ToUpper(line), []string{}}
+		 return Command{strings.ToUpper(line), []string{}}
 	}
 }
 
 func (c *Command) String() string {
-	return fmt.Sprintf("%v { %v }", c.Prefix, strings.Join(c.Args, " "))
+	 return fmt.Sprintf("%v { %v }", c.Prefix, strings.Join(c.Args, " "))
 }
-
 
 type Server struct {
 	Addr string
@@ -87,41 +63,11 @@ func (s *Server) handleConn(conn Connection) {
 		cmd = cmd.Parse(ln)
 
 		// Inspired by https://redis.io/commands
+		Commands[cmd.Prefix](conn, cmd.Args)
+
 		switch cmd.Prefix {
-		// Boolean Transactions
-		case "AND":
-			conn.transactionOperand = cmd.Prefix
-			return
-		case "END":
-			conn.isTransaction = false
-			conn.transactionOperand = ""
-			conn.transactionStorage = []string{}
 
-			fmt.Fprintf(conn, "%v\r\n", conn.transactionStorage)
-			return
-		case "OR":
-			conn.transactionOperand = cmd.Prefix
-			return
-		case "NAND":
-			conn.transactionOperand = cmd.Prefix
-			return
-		case "START":
-			var initial string
 
-			if len(cmd.Args) > 0 {
-				for _, arg := range cmd.Args {
-					if arg == "ALL" || arg == "NONE" {
-						initial = arg
-					}
-				}
-			}
-
-			// Transaction defaults to OR statement
-			conn.isTransaction = true
-			conn.transactionInitial = initial
-			conn.transactionOperand = "OR"
-			conn.transactionStorage = []string{}
-			return
 
 		// Connection
 		case "AUTH":
@@ -133,17 +79,17 @@ func (s *Server) handleConn(conn Connection) {
 				fmt.Fprintf(conn, "%v\r\n", cmd.Args[0])
 			}
 
-			return
+
 		case "LIST":
 			fmt.Fprintf(conn, "%v\r\n", []string{})
-			return
+
 		case "PING":
 			fmt.Fprintf(conn, "%v\r\n", "PONG")
-			return
+
 		case "QUIT":
 			fmt.Fprintf(conn, "%v\r\n", "good bye!")
 			conn.End()
-			return
+
 		case "SELECT":
 			if len(cmd.Args) == 0 {
 				fmt.Fprintf(conn, "ERR: %v\r\n", "Not enough arguments")
@@ -153,20 +99,20 @@ func (s *Server) handleConn(conn Connection) {
 				fmt.Fprintf(conn, "%v\r\n", cmd.Args[0])
 			}
 
-			return
+
 
 		// GEO
 		case "BOUNDS":
 			fmt.Fprintf(conn, "ERR: %v\r\n", "Not implemented yet")
-			return
+
 		case "POINT":
 			fmt.Fprintf(conn, "ERR: %v\r\n", "Not implemented yet")
-			return
+
 
 		// Time
 		case "TRANGE":
 			fmt.Fprintf(conn, "ERR: %v\r\n", "Not implemented yet")
-			return
+
 
 		// Keys
 		case "BIND":
@@ -178,9 +124,9 @@ func (s *Server) handleConn(conn Connection) {
 					cmd.Args[len(cmd.Args) - 1],
 				)
 			}
-			return
+
 		case "DEL":
-			return
+
 		case "EXISTS":
 			var results = make([]bool, len(cmd.Args))
 
@@ -191,42 +137,42 @@ func (s *Server) handleConn(conn Connection) {
 
 			fmt.Fprintf(conn, "  %v\r\n", results[len(results) - 1])
 			fmt.Fprintf(conn, "%v\r\n", "]")
-			return
+
 		case "GET":
 			if len(cmd.Args) == 0 {
 				fmt.Fprintf(conn, "ERR: %v\r\n", "Nothing to get")
 			} else {
 				fmt.Fprintf(conn, "%v\r\n", "GET")
 			}
-			return
+
 		case "NUKE":
-			return
+
 		case "RANDOM":
-			return
+
 		case "SET":
 			fmt.Fprintf(conn, "%v\r\n", cmd.Args)
-			return
+
 		case "UNBIND":
-			return
+
 		case "WATCH":
-			return
+
 
 		// Server Admin
 		case "CLIENTS":
-			return
+
 		case "FLUSHALL":
-			return
+
 		case "FLUSHDB":
-			return
+
 		case "INFO":
 			fmt.Fprintf(conn, "%v\r\n", "INFO")
-			return
+
 		case "SAVE":
-			return
+
 		case "SHUTDOWN":
-			return
+
 		case "TIME":
-			return
+
 
 		// Utils
 		case "UUID":
@@ -241,7 +187,7 @@ func (s *Server) handleConn(conn Connection) {
 			for i := 0; i < iter; i += 1{
 				fmt.Fprintf(conn, "%v\r\n", uuid.NewV4().String())
 			}
-			return
+
 		default:
 			fmt.Printf("%v: %v\n", conn.RemoteAddr(), cmd.String())
 		}
@@ -254,7 +200,7 @@ func (s *Server) Serve (ln net.Listener) error {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			return err
+			 return err
 		}
 
 		c := Connection{
@@ -274,10 +220,10 @@ func (s *Server) ListenAndServe (addr string) error {
 	ln, err := net.Listen("tcp", addr)
 
 	if err != nil {
-
-		return err
-
+		 return err
 	}
 
-	return s.Serve(ln)
+	 s.Serve(ln)
+
+	 return nil
 }
